@@ -1,10 +1,13 @@
 import os
 import fire
 
-from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, losses
+from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer
 from sentence_transformers.training_args import SentenceTransformerTrainingArguments
+from losses import CachedMultipleNegativesSymmetricRankingLoss
 
-from utils import _setup_logger
+from datasets import load_dataset
+
+from utils import _setup_logger, change2e5format
 from setproctitle import setproctitle
 from processor import KoE5MRCProcessor
 
@@ -13,13 +16,14 @@ def train(
     model_name_or_path: str = "intfloat/multilingual-e5-large",
     output_dir: str = "/data/ONTHEIT/MODELS",
     data_dir: str = "/data/ONTHEIT/DATA",
-    num_epochs: int = 2,
+    num_epochs: int = 1,
     learning_rate: float = 2e-5,
     per_device_train_batch_size: int = 512,
     mini_batch_size: int = 32,
     per_device_eval_batch_size: int = 512,
     warmup_steps: int = 100,
     logging_steps: int = 2,
+    use_hf_dataset: bool = False,
     max_seq_length: int = 512,
     save_steps: int = 100,
     cl_temperature: float = 0.02,
@@ -32,7 +36,7 @@ def train(
     use_wandb: bool = True,
     resume_from_checkpoint: bool = False,
 ):
-    setproctitle("dew1701 KoE5")
+    setproctitle("dew1701 KUKE")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Embedding model with params:\n"
@@ -58,8 +62,12 @@ def train(
     model = SentenceTransformer(model_name_or_path, trust_remote_code=True)
 
     logger.info("Loading train_dataset...")
-    processor = KoE5MRCProcessor()
-    train_dataset = processor.get_train_examples(data_dir)
+    if use_hf_dataset:
+        dataset = load_dataset(data_dir)
+        train_dataset = change2e5format(dataset["train"])
+    else:
+        processor = KoE5MRCProcessor()
+        train_dataset = processor.get_train_examples(data_dir)
     logger.info("Finished loading train dataset!")
 
     # logger.info("Loading eval_dataset...")
@@ -68,7 +76,7 @@ def train(
     # )
     # logger.info("Finished loading eval dataset!")
 
-    loss = losses.CachedMultipleNegativesRankingLoss(model, mini_batch_size=mini_batch_size)
+    loss = CachedMultipleNegativesSymmetricRankingLoss.CachedMultipleNegativesSymmetricRankingLoss(model=model, mini_batch_size=mini_batch_size)
     trainer = SentenceTransformerTrainer(
         model=model,
         args=SentenceTransformerTrainingArguments(

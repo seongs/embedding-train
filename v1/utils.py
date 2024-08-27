@@ -1,6 +1,6 @@
 import logging
 from torch import Tensor, FloatTensor
-
+from datasets import Dataset
 
 def _setup_logger():
     log_format = logging.Formatter("[%(asctime)s %(levelname)s] %(message)s")
@@ -12,6 +12,19 @@ def _setup_logger():
     logger.handlers = [console_handler]
 
     return logger
+
+def change2e5format(data: Dataset):
+    queries = []
+    positives = []
+    for entry in data:
+        queries.append(f"query: {entry['query']}")
+        positives.append(f"passage: {entry['answer']}")
+
+    formatted_data = Dataset.from_dict({
+        "anchor": queries,
+        "positive": positives,
+    })
+    return formatted_data
 
 
 def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> FloatTensor:
