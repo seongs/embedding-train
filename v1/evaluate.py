@@ -42,7 +42,8 @@ def get_subdirectories(directory):
 
 directory = '/data/yjoonjang/KUKE'
 
-model_names = get_subdirectories(directory)
+# model_names = get_subdirectories(directory)
+model_names = ["/data/yjoonjang/kuke-pt-result"]
 
 model_names =  model_names
 print(model_names)

@@ -1,13 +1,13 @@
 import os
 import fire
 
-from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer
+from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, losses
 from sentence_transformers.training_args import SentenceTransformerTrainingArguments
 from losses import CachedMultipleNegativesSymmetricRankingLoss
 
 from datasets import load_dataset
 
-from utils import _setup_logger, change2e5format
+from utils import _setup_logger, change2e5format, change2sentencetransformersformat
 from setproctitle import setproctitle
 from processor import KoE5MRCProcessor
 
@@ -31,7 +31,7 @@ def train(
     fp16: bool = True,
     gradient_accumulation_steps: int = 1,
     evaluation_strategy: str = "no",
-    eval_steps: int = 300,
+    eval_steps: int = 100,
     prediction_loss_only: bool = False,
     use_wandb: bool = True,
     resume_from_checkpoint: bool = False,
@@ -68,15 +68,19 @@ def train(
     else:
         processor = KoE5MRCProcessor()
         train_dataset = processor.get_train_examples(data_dir)
+        print(train_dataset)
     logger.info("Finished loading train dataset!")
 
     # logger.info("Loading eval_dataset...")
-    # eval_dataset = KoE5Dataset(
-    #     args=data_args, tokenizer=tokenizer, mode="dev", test=test
-    # )
+    # if use_hf_dataset:
+    #     dataset = load_dataset(data_dir)
+    #     eval_dataset = change2e5format(dataset["valid"])
+    # else:
+    #     processor = KoE5MRCProcessor()
+    #     eval_dataset = processor.get_dev_examples(data_dir)
     # logger.info("Finished loading eval dataset!")
 
-    loss = CachedMultipleNegativesSymmetricRankingLoss.CachedMultipleNegativesSymmetricRankingLoss(model=model, mini_batch_size=mini_batch_size)
+    loss = losses.CachedMultipleNegativesRankingLoss(model=model, mini_batch_size=mini_batch_size)
     trainer = SentenceTransformerTrainer(
         model=model,
         args=SentenceTransformerTrainingArguments(
@@ -88,7 +92,7 @@ def train(
             learning_rate=learning_rate,
             logging_steps=logging_steps,
             # optim="adamw_torch",  # since we use DS optim?
-            evaluation_strategy=evaluation_strategy,
+            eval_strategy=evaluation_strategy,
             save_strategy="epoch",
             eval_steps=eval_steps,
             # save_steps=save_steps,
