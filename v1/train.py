@@ -65,10 +65,11 @@ def train(
     if use_hf_dataset:
         dataset = load_dataset(data_dir)
         train_dataset = change2e5format(dataset["train"])
+        print(train_dataset[0])
     else:
         processor = KoE5MRCProcessor()
         train_dataset = processor.get_train_examples(data_dir)
-        print(train_dataset)
+        print(train_dataset[0])
     logger.info("Finished loading train dataset!")
 
     # logger.info("Loading eval_dataset...")
@@ -86,7 +87,7 @@ def train(
         args=SentenceTransformerTrainingArguments(
             per_device_train_batch_size=per_device_train_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
-            warmup_steps=warmup_steps,
+            # warmup_steps=warmup_steps,
             # warmup_ratio=warmup_ratio,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
