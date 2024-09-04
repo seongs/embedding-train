@@ -3,7 +3,7 @@ import fire
 
 from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, losses
 from sentence_transformers.training_args import SentenceTransformerTrainingArguments
-from losses import CachedMultipleNegativesSymmetricRankingLoss
+# from losses import CachedMultipleNegativesSymmetricRankingLoss
 
 from datasets import load_dataset
 
