@@ -1,20 +1,20 @@
 EPOCH=2
 LR=1e-5
-BATCH_SIZE=4096
+BATCH_SIZE=131072
 MINI_BATCH_SIZE=16
-DATE=240901
+DATE=240903
 
-BATCH_SIZE_DIV8=$((BATCH_SIZE / 8))
+BATCH_SIZE_DIV8=$((BATCH_SIZE / 4))
 
 export WANDB_PROJECT="KUKE"
-export WANDB_NAME="KUKE-ft-after-pt-bs=${BATCH_SIZE_DIV8}-ep=${EPOCH}-lr=${LR}-${DATE}"
 
 # === PT ===
+#export WANDB_NAME="KUKE-pt-data=prefinetuning_ko-bs=${BATCH_SIZE_DIV8}-ep=${EPOCH}-lr=${LR}-${DATE}"
 #CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 train.py \
 #    --model_name_or_path "intfloat/multilingual-e5-large" \
 #    --output_dir "/data/yjoonjang/KUKE/${WANDB_NAME}" \
 #    --use_hf_dataset True \
-#    --data_dir "nlpai-lab/prefinetuning-embed-ko-en-partial-v1" \
+#    --data_dir "nlpai-lab/prefinetuning-embed-full-v1" \
 #    --num_epochs $EPOCH \
 #    --learning_rate $LR \
 #    --per_device_train_batch_size $BATCH_SIZE \
@@ -28,8 +28,9 @@ export WANDB_NAME="KUKE-ft-after-pt-bs=${BATCH_SIZE_DIV8}-ep=${EPOCH}-lr=${LR}-$
 #    --test False
 
 # === FT === hf_data False
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 train.py \
-    --model_name_or_path "/data/yjoonjang/KUKE/KUKE-pt-bs=32768-ep=1-lr=1e-5-240830" \
+export WANDB_NAME="KUKE-ft_with_openqp_pair-after_pt_ep2-bs=${BATCH_SIZE_DIV8}-ep=${EPOCH}-lr=${LR}-${DATE}"
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 --master_port=48021 train.py \
+    --model_name_or_path "/data/yjoonjang/KUKE/KUKE-pt-bs=32768-ep=2-lr=1e-5-240830" \
     --output_dir "/data/yjoonjang/KUKE/${WANDB_NAME}" \
     --use_hf_dataset False \
     --data_dir "/data/ONTHEIT/DATA/data_without_ontheit" \

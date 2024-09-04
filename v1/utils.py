@@ -20,8 +20,8 @@ def change2e5format(data: Dataset):
     queries = []
     positives = []
     for entry in data:
-        queries.append(f"query: {entry['query']}")
-        positives.append(f"passage: {entry['answer']}")
+        queries.append(f"query: {entry['train']['query']}")
+        positives.append(f"passage: {entry['train']['answer']}")
 
     formatted_data = Dataset.from_dict({
         "anchor": queries,

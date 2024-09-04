@@ -124,7 +124,7 @@ class KoE5MRCProcessor(DataProcessor):
         data = Dataset.from_dict({
             "anchor": queries,
             "positive": positives,
-            "negative": hard_negatives
+            # "negative": hard_negatives
         })
         return data
 

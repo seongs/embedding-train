@@ -36,7 +36,7 @@ def train(
     use_wandb: bool = True,
     resume_from_checkpoint: bool = False,
 ):
-    setproctitle("dew1701 KUKE")
+    setproctitle("dew1701 ONTHEIT EMBEDDING")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Embedding model with params:\n"

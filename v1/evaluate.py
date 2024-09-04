@@ -24,8 +24,9 @@ TASK_LIST_RERANKING = []
 
 # TASK_LIST_RETRIEVAL = ["Ko-StrategyQA", "Ko-mrtydi", "Ko-miracl"]
 # TASK_LIST_RETRIEVAL = ["Ko-StrategyQA"]
-TASK_LIST_RETRIEVAL = ["Ko-StrategyQA", "OntheITBM1-filtered-split", "OntheITBM2-filtered-split"]
-
+#
+TASK_LIST_RETRIEVAL = ["Ko-StrategyQA", "OntheITBM1-filtered-split", "OntheITBM2-filtered-split", "Markers_bm"]
+# TASK_LIST_RETRIEVAL = ["Markers_bm"]
 TASK_LIST_STS = []
 
 TASK_LIST = (
@@ -43,7 +44,7 @@ def get_subdirectories(directory):
 directory = '/data/yjoonjang/KUKE'
 
 # model_names = get_subdirectories(directory)
-model_names = ["/data/yjoonjang/KUKE/KUKE-pt-bs=32768-ep=1-lr=1e-5-240830"]
+model_names = ["/data/yjoonjang/KUKE/KUKE-ft-after-pt-bs=512-ep=1-lr=1e-5-240901", "/data/yjoonjang/KUKE/KUKE-ft-after-pt-bs=512-ep=2-lr=1e-5-240901"]
 
 model_names =  model_names
 print(model_names)
