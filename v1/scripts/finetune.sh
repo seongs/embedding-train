@@ -1,8 +1,8 @@
 EPOCH=2
 LR=2e-5
-BATCH_SIZE=32768
+BATCH_SIZE=2048
 MINI_BATCH_SIZE=16
-DATE=240904
+DATE=240905
 
 BATCH_SIZE_DIV8=$((BATCH_SIZE / 4))
 
@@ -28,8 +28,8 @@ export WANDB_PROJECT="KUKE"
 #    --test False
 
 # === FT === hf_data False
-export WANDB_NAME="KUKE-ft_with_openqp_pair_without_hn-loss=CachedMultipleNegativesRankingLoss-bs=${BATCH_SIZE_DIV8}-ep=${EPOCH}-lr=${LR}-${DATE}"
-CUDA_VISIBLE_DEVICES=4,5,6,7 torchrun --nproc_per_node=4 --master_port=48020 train.py \
+export WANDB_NAME="KUKE-ft_with_openqp_pair_without_hn-loss=symmetric-bs=${BATCH_SIZE_DIV8}-ep=${EPOCH}-lr=${LR}-${DATE}"
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 --master_port=47010 train.py \
     --model_name_or_path "intfloat/multilingual-e5-large" \
     --output_dir "/data/yjoonjang/KUKE/${WANDB_NAME}" \
     --use_hf_dataset False \

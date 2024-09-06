@@ -27,14 +27,13 @@ TASK_LIST_RERANKING = []
 
 # TASK_LIST_RETRIEVAL = ["Ko-StrategyQA", "Ko-mrtydi", "Ko-miracl"]
 # TASK_LIST_RETRIEVAL = ["Ko-StrategyQA"]
-# TASK_LIST_RETRIEVAL = ["Ko-StrategyQA",
-#                        "OntheITBM1-filtered-split",
-#                        "OntheITBM2-filtered-split",
-#                        "Markers_bm",
-#                        "MIRACLRetrieval",
-#                        "PublicHealthQA",
-#                        "MultiLongDocRetrieval"]
-TASK_LIST_RETRIEVAL = ["Ko-StrategyQA","Markers_bm"]
+TASK_LIST_RETRIEVAL = ["Ko-StrategyQA", 
+                       # "OntheITBM1-filtered-split",
+                       # "OntheITBM2-filtered-split",
+                       "Markers_bm", 
+                       # "MIRACLRetrieval",
+                       # "PublicHealthQA"
+                       ]
 
 TASK_LIST_STS = []
 
@@ -56,7 +55,13 @@ model_names = sum([get_subdirectories(directory) for directory in directories], 
 # model_names = ['intfloat/multilingual-e5-base', 'intfloat/multilingual-e5-large', 'Alibaba-NLP/gte-multilingual-base', 'Alibaba-NLP/gte-multilingual-mlm-base'] + model_names
 # model_names = ["/data/yjoonjang/KUKE/KUKE-ft-after-pt-bs=32768-ep=1-lr=1e-5-240902"]
 
-model_names = ["/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair_without_hn-loss=CachedMultipleNegativesRankingLoss-bs=8192-ep=2-lr=2e-5-240904"]
+model_names = [
+               # "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair-bs=32768-ep=1-lr=1e-5-240903"
+               # '/data/yjoonjang/KUKE/KUKE-loss=CachedMultipleNegativesSymmetricRankingLoss-bs=64-ep=1-lr=2e-5-240827',
+               # '/data/yjoonjang/KUKE/KUKE-ft-bs=512-ep=1-lr=2e-5-240826'
+                "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair_without_hn-loss=symmetric-bs=2048-ep=2-lr=2e-5-240905",
+                "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair_without_hn-loss=symmetric-bs=4096-ep=2-lr=2e-5-240905"
+               ]
 print(model_names)
 
 for model_name in model_names:
@@ -75,9 +80,11 @@ for model_name in model_names:
             evaluation = MTEB(
                 tasks=get_tasks(tasks=TASK_LIST, languages=["kor-Kore", "kor-Hang"])
             )
+            batch_size = 512
+            if 'bge-m3' in model_name:
+                batch_size = 4
             evaluation.run(model, 
                            output_folder=f"/data/ONTHEIT/results/{model_name}",
-                           encode_kwargs={"batch_size": 256},
-                           trust_remote_code=True)
+                           encode_kwargs={"batch_size": batch_size})
     except Exception as ex:
         print(ex)

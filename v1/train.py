@@ -1,9 +1,9 @@
 import os
 import fire
 
-from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, losses
+from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer
 from sentence_transformers.training_args import SentenceTransformerTrainingArguments
-# from losses import CachedMultipleNegativesSymmetricRankingLoss
+from losses import CachedMultipleNegativesSymmetricRankingLoss
 
 from datasets import load_dataset
 
@@ -81,7 +81,7 @@ def train(
     #     eval_dataset = processor.get_dev_examples(data_dir)
     # logger.info("Finished loading eval dataset!")
 
-    loss = losses.CachedMultipleNegativesRankingLoss(model=model, mini_batch_size=mini_batch_size)
+    loss = CachedMultipleNegativesSymmetricRankingLoss.CachedMultipleNegativesSymmetricRankingLoss(model=model, mini_batch_size=mini_batch_size)
     trainer = SentenceTransformerTrainer(
         model=model,
         args=SentenceTransformerTrainingArguments(
