@@ -59,6 +59,7 @@ model_names = [
                # "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair-bs=32768-ep=1-lr=1e-5-240903"
                # '/data/yjoonjang/KUKE/KUKE-loss=CachedMultipleNegativesSymmetricRankingLoss-bs=64-ep=1-lr=2e-5-240827',
                # '/data/yjoonjang/KUKE/KUKE-ft-bs=512-ep=1-lr=2e-5-240826'
+                "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair_without_hn-loss=symmetric-bs=512-ep=2-lr=2e-5-240905",
                 "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair_without_hn-loss=symmetric-bs=2048-ep=2-lr=2e-5-240905",
                 "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair_without_hn-loss=symmetric-bs=4096-ep=2-lr=2e-5-240905"
                ]
