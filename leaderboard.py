@@ -8,7 +8,7 @@ st.set_page_config(layout='wide')
 
 
 def app():
-    # 결과를 저장할 데이터프레임을 생성합니다.
+    # 결과를 저장할 데이터프레임을 생성
     data = {}
     avg_data = {}  # average score를 저장하기 위한 dictionary
     tasks = ['Ko-StrategyQA', 'Markers_bm']
