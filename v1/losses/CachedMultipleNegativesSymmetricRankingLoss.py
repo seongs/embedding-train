@@ -36,36 +36,40 @@ class RandContext:
 
 
 def _backward_hook(
-        grad_output: Tensor,
-        sentence_features: Iterable[dict[str, Tensor]],
-        loss_obj: CachedMultipleNegativesSymmetricRankingLoss,
+    grad_output: Tensor,
+    sentence_features: Iterable[dict[str, Tensor]],
+    loss_obj: CachedMultipleNegativesSymmetricRankingLoss,
 ) -> None:
     """A backward hook to backpropagate the cached gradients mini-batch by mini-batch."""
     assert loss_obj.cache is not None
     assert loss_obj.random_states is not None
     with torch.enable_grad():
-        for sentence_feature, grad, random_states in zip(sentence_features, loss_obj.cache, loss_obj.random_states):
+        for sentence_feature, grad, random_states in zip(
+            sentence_features, loss_obj.cache, loss_obj.random_states
+        ):
             for (reps_mb, _), grad_mb in zip(
-                    loss_obj.embed_minibatch_iter(
-                        sentence_feature=sentence_feature,
-                        with_grad=True,
-                        copy_random_state=False,
-                        random_states=random_states,
-                    ),
-                    grad,
+                loss_obj.embed_minibatch_iter(
+                    sentence_feature=sentence_feature,
+                    with_grad=True,
+                    copy_random_state=False,
+                    random_states=random_states,
+                ),
+                grad,
             ):
-                surrogate = torch.dot(reps_mb.flatten(), grad_mb.flatten()) * grad_output
+                surrogate = (
+                    torch.dot(reps_mb.flatten(), grad_mb.flatten()) * grad_output
+                )
                 surrogate.backward()
 
 
 class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
     def __init__(
-            self,
-            model: SentenceTransformer,
-            scale: float = 20.0,
-            similarity_fct: callable[[Tensor, Tensor], Tensor] = util.cos_sim,
-            mini_batch_size: int = 32,
-            show_progress_bar: bool = False,
+        self,
+        model: SentenceTransformer,
+        scale: float = 20.0,
+        similarity_fct: callable[[Tensor, Tensor], Tensor] = util.cos_sim,
+        mini_batch_size: int = 32,
+        show_progress_bar: bool = False,
     ) -> None:
         """
         Cached version of MultipleNegativesSymmetricRankingLoss with GradCache optimization.
@@ -146,42 +150,48 @@ class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
         self.show_progress_bar = show_progress_bar
 
     def embed_minibatch(
-            self,
-            sentence_feature: dict[str, Tensor],
-            begin: int,
-            end: int,
-            with_grad: bool,
-            copy_random_state: bool,
-            random_state: RandContext | None = None,
+        self,
+        sentence_feature: dict[str, Tensor],
+        begin: int,
+        end: int,
+        with_grad: bool,
+        copy_random_state: bool,
+        random_state: RandContext | None = None,
     ) -> tuple[Tensor, RandContext | None]:
         """Embed a mini-batch of sentences."""
         grad_context = nullcontext if with_grad else torch.no_grad
         random_state_context = nullcontext() if random_state is None else random_state
-        sentence_feature_minibatch = {k: v[begin:end] for k, v in sentence_feature.items()}
+        sentence_feature_minibatch = {
+            k: v[begin:end] for k, v in sentence_feature.items()
+        }
         with random_state_context:
             with grad_context():
-                random_state = RandContext(*sentence_feature_minibatch.values()) if copy_random_state else None
+                random_state = (
+                    RandContext(*sentence_feature_minibatch.values())
+                    if copy_random_state
+                    else None
+                )
                 reps = self.model(sentence_feature_minibatch)["sentence_embedding"]
         return reps, random_state
 
     def embed_minibatch_iter(
-            self,
-            sentence_feature: dict[str, Tensor],
-            with_grad: bool,
-            copy_random_state: bool,
-            random_states: list[RandContext] | None = None,
+        self,
+        sentence_feature: dict[str, Tensor],
+        with_grad: bool,
+        copy_random_state: bool,
+        random_states: list[RandContext] | None = None,
     ) -> Iterator[tuple[Tensor, RandContext | None]]:
         """Iterate over mini-batches of sentences for embedding."""
         input_ids: Tensor = sentence_feature["input_ids"]
         bsz, _ = input_ids.shape
         for i, b in enumerate(
-                tqdm.trange(
-                    0,
-                    bsz,
-                    self.mini_batch_size,
-                    desc="Embed mini-batches",
-                    disable=not self.show_progress_bar,
-                )
+            tqdm.trange(
+                0,
+                bsz,
+                self.mini_batch_size,
+                desc="Embed mini-batches",
+                disable=not self.show_progress_bar,
+            )
         ):
             e = b + self.mini_batch_size
             reps, random_state = self.embed_minibatch(
@@ -197,25 +207,31 @@ class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
     def calculate_loss_and_cache_gradients(self, reps: list[list[Tensor]]) -> Tensor:
         """Calculate the symmetric loss and cache gradients."""
         embeddings_a = torch.cat(reps[0])  # (bsz, hdim)
-        embeddings_b = torch.cat([torch.cat(r) for r in reps[1:]])  # ((1 + nneg) * bsz, hdim)
+        embeddings_b = torch.cat(
+            [torch.cat(r) for r in reps[1:]]
+        )  # ((1 + nneg) * bsz, hdim)
 
         batch_size = len(embeddings_a)
         labels = torch.arange(batch_size, device=embeddings_a.device)
 
         losses: list[torch.Tensor] = []
         for b in tqdm.trange(
-                0,
-                batch_size,
-                self.mini_batch_size,
-                desc="Preparing caches",
-                disable=not self.show_progress_bar,
+            0,
+            batch_size,
+            self.mini_batch_size,
+            desc="Preparing caches",
+            disable=not self.show_progress_bar,
         ):
             e = b + self.mini_batch_size
-            scores: Tensor = self.similarity_fct(embeddings_a[b:e], embeddings_b) * self.scale
+            scores: Tensor = (
+                self.similarity_fct(embeddings_a[b:e], embeddings_b) * self.scale
+            )
             forward_loss: torch.Tensor = self.cross_entropy_loss(scores, labels[b:e])
 
             positive_scores = scores[:, b:e]
-            backward_loss: torch.Tensor = self.cross_entropy_loss(positive_scores.t(), labels[:len(positive_scores)])
+            backward_loss: torch.Tensor = self.cross_entropy_loss(
+                positive_scores.t(), labels[: len(positive_scores)]
+            )
 
             loss_mbatch = (forward_loss + backward_loss) / 2
             loss_mbatch.backward()
@@ -231,25 +247,31 @@ class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
     def calculate_loss(self, reps: list[list[Tensor]]) -> Tensor:
         """Calculate the symmetric loss without caching gradients (for evaluation)."""
         embeddings_a = torch.cat(reps[0])  # (bsz, hdim)
-        embeddings_b = torch.cat([torch.cat(r) for r in reps[1:]])  # ((1 + nneg) * bsz, hdim)
+        embeddings_b = torch.cat(
+            [torch.cat(r) for r in reps[1:]]
+        )  # ((1 + nneg) * bsz, hdim)
 
         batch_size = len(embeddings_a)
         labels = torch.arange(batch_size, device=embeddings_a.device)
 
         losses: list[torch.Tensor] = []
         for b in tqdm.trange(
-                0,
-                batch_size,
-                self.mini_batch_size,
-                desc="Calculating loss",
-                disable=not self.show_progress_bar,
+            0,
+            batch_size,
+            self.mini_batch_size,
+            desc="Calculating loss",
+            disable=not self.show_progress_bar,
         ):
             e = b + self.mini_batch_size
-            scores: Tensor = self.similarity_fct(embeddings_a[b:e], embeddings_b) * self.scale
+            scores: Tensor = (
+                self.similarity_fct(embeddings_a[b:e], embeddings_b) * self.scale
+            )
             forward_loss: torch.Tensor = self.cross_entropy_loss(scores, labels[b:e])
 
             positive_scores = scores[:, b:e]
-            backward_loss: torch.Tensor = self.cross_entropy_loss(positive_scores.t(), labels[:len(positive_scores)])
+            backward_loss: torch.Tensor = self.cross_entropy_loss(
+                positive_scores.t(), labels[: len(positive_scores)]
+            )
 
             loss_mbatch = (forward_loss + backward_loss) / 2
             losses.append(loss_mbatch)
@@ -257,7 +279,9 @@ class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
         loss = sum(losses) / len(losses)
         return loss
 
-    def forward(self, sentence_features: Iterable[dict[str, Tensor]], labels: Tensor) -> Tensor:
+    def forward(
+        self, sentence_features: Iterable[dict[str, Tensor]], labels: Tensor
+    ) -> Tensor:
         """Forward pass of the loss function."""
         reps = []
         self.random_states = []
@@ -265,9 +289,9 @@ class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
             reps_mbs = []
             random_state_mbs = []
             for reps_mb, random_state in self.embed_minibatch_iter(
-                    sentence_feature=sentence_feature,
-                    with_grad=False,
-                    copy_random_state=True,
+                sentence_feature=sentence_feature,
+                with_grad=False,
+                copy_random_state=True,
             ):
                 reps_mbs.append(reps_mb.detach().requires_grad_())
                 random_state_mbs.append(random_state)
@@ -276,7 +300,11 @@ class CachedMultipleNegativesSymmetricRankingLoss(nn.Module):
 
         if torch.is_grad_enabled():
             loss = self.calculate_loss_and_cache_gradients(reps)
-            loss.register_hook(partial(_backward_hook, sentence_features=sentence_features, loss_obj=self))
+            loss.register_hook(
+                partial(
+                    _backward_hook, sentence_features=sentence_features, loss_obj=self
+                )
+            )
         else:
             loss = self.calculate_loss(reps)
 

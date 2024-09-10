@@ -81,7 +81,9 @@ def train(
     #     eval_dataset = processor.get_dev_examples(data_dir)
     # logger.info("Finished loading eval dataset!")
 
-    loss = CachedMultipleNegativesSymmetricRankingLoss.CachedMultipleNegativesSymmetricRankingLoss(model=model, mini_batch_size=mini_batch_size)
+    loss = CachedMultipleNegativesSymmetricRankingLoss.CachedMultipleNegativesSymmetricRankingLoss(
+        model=model, mini_batch_size=mini_batch_size
+    )
     trainer = SentenceTransformerTrainer(
         model=model,
         args=SentenceTransformerTrainingArguments(
@@ -100,11 +102,11 @@ def train(
             output_dir=output_dir,
             report_to="wandb" if use_wandb else [],
             fp16=fp16,
-            gradient_checkpointing=False
+            gradient_checkpointing=False,
         ),
         train_dataset=train_dataset,
         eval_dataset=None,
-        loss=loss
+        loss=loss,
     )
 
     checkpoint = None

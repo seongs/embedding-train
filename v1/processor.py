@@ -121,11 +121,13 @@ class KoE5MRCProcessor(DataProcessor):
             positives.append(f"passage: {document}")
             hard_negatives.append(f"passage: {hard_negative}")
 
-        data = Dataset.from_dict({
-            "anchor": queries,
-            "positive": positives,
-            # "negative": hard_negatives
-        })
+        data = Dataset.from_dict(
+            {
+                "anchor": queries,
+                "positive": positives,
+                # "negative": hard_negatives
+            }
+        )
         return data
 
     @classmethod

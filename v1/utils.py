@@ -5,6 +5,7 @@ from torch import Tensor, FloatTensor
 from datasets import Dataset
 import json
 
+
 def _setup_logger():
     log_format = logging.Formatter("[%(asctime)s %(levelname)s] %(message)s")
     logger = logging.getLogger()
@@ -16,6 +17,7 @@ def _setup_logger():
 
     return logger
 
+
 def change2e5format(data: Dataset):
     queries = []
     positives = []
@@ -23,11 +25,14 @@ def change2e5format(data: Dataset):
         queries.append(f"query: {entry['train']['query']}")
         positives.append(f"passage: {entry['train']['answer']}")
 
-    formatted_data = Dataset.from_dict({
-        "anchor": queries,
-        "positive": positives,
-    })
+    formatted_data = Dataset.from_dict(
+        {
+            "anchor": queries,
+            "positive": positives,
+        }
+    )
     return formatted_data
+
 
 def change2sentencetransformersformat(data):
     queries = []
@@ -39,11 +44,9 @@ def change2sentencetransformersformat(data):
         positives.append(entry["positive"])
         negatives.append(entry["negative"])
 
-    formatted_data = Dataset.from_dict({
-        "anchor": queries,
-        "positive": positives,
-        "negative": negatives
-    })
+    formatted_data = Dataset.from_dict(
+        {"anchor": queries, "positive": positives, "negative": negatives}
+    )
     return formatted_data
 
 
