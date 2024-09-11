@@ -60,7 +60,6 @@ directories = ["/data/ONTHEIT/MODELS/", "/data/yjoonjang/KUKE"]
 
 model_names = sum([get_subdirectories(directory) for directory in directories], [])
 # model_names = ['intfloat/multilingual-e5-base', 'intfloat/multilingual-e5-large', 'Alibaba-NLP/gte-multilingual-base', 'Alibaba-NLP/gte-multilingual-mlm-base'] + model_names
-# model_names = ["/data/yjoonjang/KUKE/KUKE-ft-after-pt-bs=32768-ep=1-lr=1e-5-240902"]
 
 model_names = [
     # "/data/yjoonjang/KUKE/KUKE-ft_with_openqp_pair-bs=32768-ep=1-lr=1e-5-240903"

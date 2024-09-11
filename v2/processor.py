@@ -4,13 +4,10 @@ import dataclasses
 from dataclasses import dataclass
 from typing import List, Optional
 
-from transformers.tokenization_utils import PreTrainedTokenizer
-from transformers.utils import is_tf_available, logging
+from transformers.utils import logging
 from transformers.data.processors.utils import DataProcessor
 
-
-if is_tf_available():
-    import tensorflow as tf
+from datasets import Dataset
 
 logger = logging.get_logger(__name__)
 
@@ -60,15 +57,6 @@ class KoE5MRCProcessor(DataProcessor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_example_from_tensor_dict(self, tensor_dict):
-        """See base class."""
-        return InputExample(
-            tensor_dict["idx"].numpy(),
-            tensor_dict["sentence"].numpy().decode("utf-8"),
-            None,
-            str(tensor_dict["label"].numpy()),
-        )
-
     def get_train_examples(self, data_dir):
         """See base class."""
         if "train.json" in os.listdir(data_dir):
@@ -108,7 +96,10 @@ class KoE5MRCProcessor(DataProcessor):
 
     def _create_examples(self, datas, set_type):
         """Creates examples for the training, dev and test sets."""
-        examples = []
+        queries = []
+        positives = []
+        hard_negatives = []
+
         for i, data in enumerate(datas):
             if isinstance(data["query"], list):
                 query = data["query"][0]
@@ -126,15 +117,18 @@ class KoE5MRCProcessor(DataProcessor):
             else:
                 hard_negative = None
 
-            examples.append(
-                E5InputExample(
-                    query=query,
-                    positive_passage=document,
-                    negative_passage=hard_negative,
-                )
-            )
+            queries.append(f"query: {query}")
+            positives.append(f"passage: {document}")
+            hard_negatives.append(f"passage: {hard_negative}")
 
-        return examples
+        data = Dataset.from_dict(
+            {
+                "anchor": queries,
+                "positive": positives,
+                # "negative": hard_negatives
+            }
+        )
+        return data
 
     @classmethod
     def _read_json(cls, input_file):
@@ -149,58 +143,3 @@ class KoE5MRCProcessor(DataProcessor):
             for line in file:
                 data.append(json.loads(line))
         return data
-
-
-def convert_examples_to_features(
-    examples: List[InputExample],
-    tokenizer: PreTrainedTokenizer,
-    max_length: Optional[int] = None,
-):
-    if max_length is None:
-        max_length = tokenizer.model_max_length
-
-    query_batch_encoding = tokenizer(
-        [example.query for example in examples],
-        max_length=max_length,
-        padding="max_length",
-        truncation=True,
-    )
-
-    document_batch_encoding = tokenizer(
-        [example.positive_passage for example in examples],
-        max_length=max_length,
-        padding="max_length",
-        truncation=True,
-    )
-
-    negative_batch_encoding = tokenizer(
-        [example.negative_passage for example in examples],
-        max_length=max_length,
-        padding="max_length",
-        truncation=True,
-    )
-
-    features = []
-    from tqdm import tqdm
-
-    for i in tqdm(range(len(examples)), desc="Converting examples to features..."):
-        query_inputs = {k: query_batch_encoding[k][i] for k in query_batch_encoding}
-        doc_inputs = {k: document_batch_encoding[k][i] for k in document_batch_encoding}
-        neg_inputs = {k: negative_batch_encoding[k][i] for k in negative_batch_encoding}
-
-        features.append(
-            {
-                "query_input_ids": query_inputs["input_ids"],
-                "query_attention_mask": query_inputs["attention_mask"],
-                "document_input_ids": doc_inputs["input_ids"],
-                "document_attention_mask": doc_inputs["attention_mask"],
-                "hard_negative_input_ids": neg_inputs["input_ids"],
-                "hard_negative_attention_mask": neg_inputs["attention_mask"],
-            }
-        )
-
-    for i, example in enumerate(examples[:3]):
-        logger.info("*** Example ***")
-        logger.info(f"features: {features[i]}")
-
-    return features

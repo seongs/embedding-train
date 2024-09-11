@@ -46,20 +46,8 @@ def app():
                                     results[score] = d["scores"]["test"][0][score]
 
                             f1_score = (
-                                2
-                                * (
-                                    results[score_types[top_k][1]]
-                                    * results[score_types[top_k][0]]
-                                )
-                                / (
-                                    results[score_types[top_k][1]]
-                                    + results[score_types[top_k][0]]
-                                )
-                                if (
-                                    results[score_types[top_k][1]]
-                                    + results[score_types[top_k][0]]
-                                )
-                                > 0
+                                2 * (results[score_types[top_k][1]] * results[score_types[top_k][0]]) / (results[score_types[top_k][1]]+ results[score_types[top_k][0]])
+                                if (results[score_types[top_k][1]]+ results[score_types[top_k][0]])> 0
                                 else 0
                             )
                             data[task][top_k].append(
