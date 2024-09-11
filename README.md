@@ -95,7 +95,7 @@ Ko-strategyQA, AutoRAG-embedding-benchmark, PublicHealthQA의 총 3가지 평가
     </tr>
     <tr>
       <td><b>KoE5 (Ours)</b></td>
-      <td>76.69</td><td>60.70<</td><td>75.70</td><td>56.32</td>
+      <td>76.69</td><td>60.70</td><td>75.70</td><td>56.32</td>
       <td><b>70.17</b></td><td><b>70.17</b></td><td><b>48.01</b></td><td><b>44.30</b></td>
       <td><b>71.43</b></td><td><b>71.43</b></td><td><b>80.10</b></td><td><b>42.86</b></td>
       <td><b>72.76</b></td><td><b>67.43</b></td><td><b>67.94</b></td><td><b>47.83</b></td>
