@@ -28,6 +28,18 @@ bash v1.1/scripts/finetune.sh
     "hard_negative": "질의와 관련성이 적지만, 유사해 보이는 문서"
 }
 ```
+데이터는 AIHUB, KorQUAD, KommonGen, Exobrain, KLUE, KoBEST, NIKL로부터 총 10종의 오픈 데이터를 수집하였으며, 총 데이터 통계는 다음과 같습니다.
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/57ae64ac-2fec-4d5f-a0ad-45b8c54b12d1" alt="data-image">
+</p>
+
 ## 평가
 - `python evaluate.py`명령어로 평가를 수행합니다.
-- `streamlit run leaderboard.py`명령어로 평가에 대한 리더보드를 확인합니다. 
+- `streamlit run leaderboard.py`명령어로 평가에 대한 리더보드를 확인합니다.
+
+## 결과
+Ko-strategyQA, AutoRAG-embedding-benchmark, PublicHealthQA의 총 3가지 평가 데이터셋으로 평가를 진행했으며, 결과는 다음과 같습니다.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a8645bda-f9f0-443f-931c-1c311ff86736" alt="eval-image">
+</p>
