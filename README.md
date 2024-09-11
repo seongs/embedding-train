@@ -30,9 +30,16 @@ bash v1.1/scripts/finetune.sh
 ```
 데이터는 AIHUB, KorQUAD, KommonGen, Exobrain, KLUE, KoBEST, NIKL로부터 총 10종의 오픈 데이터를 수집하였으며, 총 데이터 통계는 다음과 같습니다.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/57ae64ac-2fec-4d5f-a0ad-45b8c54b12d1" alt="data-image">
-</p>
+| **데이터 원천** | **# 샘플**   |
+|----------------|-------------|
+| AIHUB          | 552,276     |
+| KorQuAD        | 28,795      |
+| KommonGen      | 14,893      |
+| Exobrain       | 78,362      |
+| KLUE           | 6,334       |
+| KoBEST         | 2,849       |
+| NIKL           | 39,919      |
+| **Total**      | **723,428** |
 
 ## 평가
 - `python evaluate.py`명령어로 평가를 수행합니다.
@@ -40,6 +47,59 @@ bash v1.1/scripts/finetune.sh
 
 ## 결과
 Ko-strategyQA, AutoRAG-embedding-benchmark, PublicHealthQA의 총 3가지 평가 데이터셋으로 평가를 진행했으며, 결과는 다음과 같습니다.
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a8645bda-f9f0-443f-931c-1c311ff86736" alt="eval-image">
-</p>
+
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Model</th>
+      <th colspan="4">Ko-strategyQA</th>
+      <th colspan="4">AutoRAG-benchmark</th>
+      <th colspan="4">PublicHealthQA</th>
+      <th colspan="4">Avg</th>
+    </tr>
+    <tr>
+      <th>NDCG@1</th><th>F1@1</th><th>NDCG@3</th><th>F1@3</th>
+      <th>NDCG@1</th><th>F1@1</th><th>NDCG@3</th><th>F1@3</th>
+      <th>NDCG@1</th><th>F1@1</th><th>NDCG@3</th><th>F1@3</th>
+      <th>NDCG@1</th><th>F1@1</th><th>NDCG@3</th><th>F1@3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BGE-m3</td>
+      <td>75.68</td><td>59.68</td><td>74.79</td><td>55.76</td>
+      <td>67.54</td><td>67.54</td><td>47.57</td><td>43.42</td>
+      <td>67.53</td><td>67.53</td><td>76.69</td><td>41.56</td>
+      <td>70.25</td><td>64.92</td><td>66.35</td><td>46.91</td>
+    </tr>
+    <tr>
+      <td>mGTE</td>
+      <td>70.1</td><td>54.91</td><td>70.06</td><td>52.55</td>
+      <td>58.77</td><td>58.77</td><td>46.14</td><td>40.35</td>
+      <td>58.44</td><td>58.44</td><td>69.06</td><td>38.31</td>
+      <td>62.44</td><td>57.37</td><td>61.75</td><td>43.74</td>
+    </tr>
+    <tr>
+      <td>mE5-large</td>
+      <td><b>76.86</b></td><td><b>61.07</b></td><td><b>76.48</b></td><td><b>57.05</b></td>
+      <td>63.15</td><td>63.15</td><td>44.04</td><td>39.91</td>
+      <td>68.83</td><td>68.83</td><td>79.31</td><td><b>42.86</b></td>
+      <td>69.61</td><td>64.35</td><td>66.61</td><td>46.61</td>
+    </tr>
+    <tr>
+      <td>kf-deberta</td>
+      <td>60.64</td><td>47.19</td><td>61.21</td><td>46.22</td>
+      <td>45.61</td><td>45.61</td><td>36.79</td><td>31.58</td>
+      <td>54.55</td><td>54.55</td><td>64.69</td><td>35.71</td>
+      <td>53.6</td><td>49.12</td><td>54.23</td><td>37.84</td>
+    </tr>
+    <tr>
+      <td><b>KoE5 (Ours)</b></td>
+      <td>76.69</td><td>60.70<</td><td>75.70</td><td>56.32</td>
+      <td><b>70.17</b></td><td><b>70.17</b></td><td><b>48.01</b></td><td><b>44.30</b></td>
+      <td><b>71.43</b></td><td><b>71.43</b></td><td><b>80.10</b></td><td><b>42.86</b></td>
+      <td><b>72.76</b></td><td><b>67.43</b></td><td><b>67.94</b></td><td><b>47.83</b></td>
+    </tr>
+  </tbody>
+</table>
+
