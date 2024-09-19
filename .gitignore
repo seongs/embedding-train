@@ -1,2 +1,4 @@
 upload_to_hub.py
 cache/
+__pycache__
+wandb/

@@ -63,9 +63,13 @@ class KoE5MRCProcessor(DataProcessor):
             return self._create_examples(
                 self._read_json(os.path.join(data_dir, "train.json")), "train"
             )
-        else:
+        elif "train.jsonl" in os.listdir(data_dir):
             return self._create_examples(
                 self._read_jsonl(os.path.join(data_dir, "train.jsonl")), "train"
+            )
+        else:
+            return self._create_examples(
+                self._read_jsonl(os.path.join(data_dir, "total.jsonl")), "train"
             )
 
     def get_dev_examples(self, data_dir):
@@ -105,10 +109,20 @@ class KoE5MRCProcessor(DataProcessor):
                 query = data["query"][0]
             else:
                 query = data["query"]
-            if isinstance(data["document"], list):
-                document = data["document"][0]
+            
+            if "document" in data:
+                if isinstance(data["document"], list):
+                    document = data["document"][0]
+                else:
+                    document = data["document"]
+            elif "pos" in data:
+                if isinstance(data["pos"], list):
+                    document = data["pos"][0]
+                else:
+                    document = data["pos"]
             else:
-                document = data["document"]
+                document = None
+
             if "hard_negative" in data:
                 if isinstance(data["hard_negative"], list):
                     hard_negative = data["hard_negative"][0]

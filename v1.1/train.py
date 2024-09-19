@@ -1,12 +1,10 @@
 import os
 import fire
 
-from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer
+from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, losses
 from sentence_transformers.training_args import SentenceTransformerTrainingArguments
-from losses import CachedMultipleNegativesSymmetricRankingLoss
 
 from datasets import load_dataset
-
 from utils import _setup_logger, change2e5format, change2sentencetransformersformat
 from setproctitle import setproctitle
 from processor import KoE5MRCProcessor
@@ -81,7 +79,7 @@ def train(
     #     eval_dataset = processor.get_dev_examples(data_dir)
     # logger.info("Finished loading eval dataset!")
 
-    loss = CachedMultipleNegativesSymmetricRankingLoss.CachedMultipleNegativesSymmetricRankingLoss(
+    loss = losses.CachedMultipleNegativesRankingLoss( # losses.CachedMultipleNegativesSymmetricRankingLoss for CachedMultipleNegativesSymmetricRankingLoss
         model=model, mini_batch_size=mini_batch_size
     )
     trainer = SentenceTransformerTrainer(
@@ -89,16 +87,13 @@ def train(
         args=SentenceTransformerTrainingArguments(
             per_device_train_batch_size=per_device_train_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
-            # warmup_steps=warmup_steps,
-            # warmup_ratio=warmup_ratio,
+            warmup_ratio=warmup_ratio,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             logging_steps=logging_steps,
-            # optim="adamw_torch",  # since we use DS optim?
             eval_strategy=evaluation_strategy,
             save_strategy="epoch",
             eval_steps=eval_steps,
-            # save_steps=save_steps,
             output_dir=output_dir,
             report_to="wandb" if use_wandb else [],
             fp16=fp16,
@@ -114,13 +109,6 @@ def train(
         checkpoint = resume_from_checkpoint
     elif last_checkpoint is not None:
         checkpoint = last_checkpoint
-
-    # if model_args.init_checkpoint is not None:
-    #     print(f"Loading from {model_args.init_checkpoint} ...")
-    #     state_dict = torch.load(
-    #         os.path.join(model_args.init_checkpoint, "pytorch_model.bin")
-    #     )
-    #     model.load_state_dict(state_dict)
 
     trainer.train(resume_from_checkpoint=checkpoint)
     trainer.save_model(output_dir=output_dir)
